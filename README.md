@@ -23,3 +23,14 @@ An end-to-end Retrieval-Augmented Generation pipeline that processes PDF documen
 - Interactive chat interface
 
 **[View Project →](./retrieval-augmented/README.md)**
+
+### [Vision Transformer Fine-Tuning with LoRA](./vit-semantic-segmentation)
+Parameter-efficient fine-tuning of Vision Transformer models using Low-Rank Adaptation for food image classification. Features:
+- LoRA integration reducing trainable parameters by 98.56%
+- Vision Transformer (ViT) architecture
+- Food101 dataset with 101 food categories
+- Data augmentation pipeline
+- Mixed precision training
+- Experiment tracking with Weights & Biases
+
+**[View Project →](./vit-semantic-segmentation/README.md)**
