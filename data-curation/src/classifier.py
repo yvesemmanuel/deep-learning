@@ -57,6 +57,7 @@ class HuggingFaceJeopardyClassifier:
             "text-generation",
             model=model,
             tokenizer=tokenizer,
+            padding_side="left",
             max_new_tokens=max_new_tokens,
             return_full_text=False,
             batch_size=batch_size,
