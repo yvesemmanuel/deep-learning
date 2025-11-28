@@ -5,6 +5,7 @@ Uses custom JSON parsing for structured outputs with batch processing.
 
 import json
 from typing import List, Dict
+from concurrent.futures import ThreadPoolExecutor, as_completed
 
 import torch
 from tqdm import tqdm
@@ -58,6 +59,7 @@ class HuggingFaceJeopardyClassifier:
             tokenizer=tokenizer,
             max_new_tokens=max_new_tokens,
             return_full_text=False,
+            batch_size=batch_size,
         )
 
         logger.info(f"Model loaded successfully on device: {device_map}")
@@ -106,6 +108,55 @@ Do not include any explanation or additional text. Only return the JSON object."
 
         return prompt
 
+    def _parse_responses_parallel(
+        self, responses: List[List[Dict]], max_workers: int = 8
+    ) -> List[JeopardyClassification]:
+        """
+        Parse responses in parallel using threads for faster processing.
+
+        Parameters:
+        -----------
+        responses: List of response objects from the pipeline
+        max_workers: Maximum number of threads to use
+
+        Returns:
+        --------
+        List of JeopardyClassification objects
+        """
+
+        def parse_single_response(response) -> JeopardyClassification:
+            """Parse a single response and return classification."""
+            try:
+                generated_text = response[0]["generated_text"]
+                return parse_json_response(generated_text)
+            except Exception as e:
+                logger.warning(f"Error parsing response: {e}")
+                return JeopardyClassification(
+                    has_numbers=None,
+                    has_non_english=None,
+                    has_unusual_proper_nouns=None,
+                )
+
+        classifications: List[JeopardyClassification] = [
+            JeopardyClassification(
+                has_numbers=None,
+                has_non_english=None,
+                has_unusual_proper_nouns=None,
+            )
+        ] * len(responses)
+
+        with ThreadPoolExecutor(max_workers=max_workers) as executor:
+            future_to_idx = {
+                executor.submit(parse_single_response, response): idx
+                for idx, response in enumerate(responses)
+            }
+
+            for future in as_completed(future_to_idx):
+                idx = future_to_idx[future]
+                classifications[idx] = future.result()
+
+        return classifications
+
     def classify_batch(self, rows: List[Dict]) -> List[JeopardyClassification]:
         """
         Classify a batch of rows using structured outputs.
@@ -118,32 +169,31 @@ Do not include any explanation or additional text. Only return the JSON object."
         --------
         List of JeopardyClassification objects
         """
-        classifications = []
-
-        for row in rows:
-            prompt = self._create_prompt(
+        # Create all prompts for batch processing
+        prompts = [
+            self._create_prompt(
                 category=row.get("category", ""),
                 question=row.get("question", ""),
                 answer=row.get("answer", ""),
             )
+            for row in rows
+        ]
 
-            try:
-                response = self.pipeline(prompt)
+        try:
+            responses = self.pipeline(prompts)
 
-                generated_text = response[0]["generated_text"]
+            classifications = self._parse_responses_parallel(responses)
 
-                classification = parse_json_response(generated_text)
-                classifications.append(classification)
-
-            except Exception as e:
-                logger.warning(f"Error classifying row: {e}")
-                classifications.append(
-                    JeopardyClassification(
-                        has_numbers=False,
-                        has_non_english=False,
-                        has_unusual_proper_nouns=False,
-                    )
+        except Exception as e:
+            logger.warning(f"Error processing batch: {e}")
+            classifications = [
+                JeopardyClassification(
+                    has_numbers=None,
+                    has_non_english=None,
+                    has_unusual_proper_nouns=None,
                 )
+                for _ in rows
+            ]
 
         return classifications
 
