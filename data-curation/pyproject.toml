@@ -1,0 +1,11 @@
+[project]
+name = "data-curation"
+version = "1.0.0"
+description = "Data curation"
+authors = [
+  {name = "Yves Emmanuel", email = "yveemmanuel@gmail.com"}
+]
+requires-python = ">=3.13"
+dependencies = [
+  "pandas>=2.3.3"
+]
