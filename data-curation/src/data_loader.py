@@ -2,6 +2,7 @@
 Data loading and preprocessing utilities.
 """
 
+import random
 import json
 from typing import List, Dict, Optional
 from pathlib import Path
@@ -42,7 +43,7 @@ class JeopardyDataLoader:
             data = json.load(f)
 
         if max_samples is not None:
-            data = data[:max_samples]
+            data = random.sample(data, max_samples)
             logger.info(f"Loaded {len(data):,} samples (limited to {max_samples:,})")
         else:
             logger.info(f"Loaded {len(data):,} samples")
