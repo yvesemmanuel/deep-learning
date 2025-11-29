@@ -1,0 +1,28 @@
+{
+  "classification_quality": {
+    "total": 216930,
+    "successful": 216930,
+    "failed": 0,
+    "success_rate": 100.0,
+    "failure_rate": 0.0
+  },
+  "classified_dataset": {
+    "total_questions": 216930,
+    "valid_predictions": 216930
+  },
+  "numbers": {
+    "classified_count": 80275,
+    "percentage_of_valid": 37.01,
+    "sample_size": 1000
+  },
+  "non_english": {
+    "classified_count": 37168,
+    "percentage_of_valid": 17.13,
+    "sample_size": 1000
+  },
+  "unusual_proper_nouns": {
+    "classified_count": 28509,
+    "percentage_of_valid": 13.14,
+    "sample_size": 1000
+  }
+}

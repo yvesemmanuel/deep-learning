@@ -52,7 +52,7 @@ class HuggingFaceJeopardyClassifier:
             tokenizer.pad_token = tokenizer.eos_token
 
         model = AutoModelForCausalLM.from_pretrained(
-            model_name, device_map=device_map, torch_dtype="auto"
+            model_name, device_map=device_map, dtype="auto"
         )
 
         self.pipeline = pipeline(

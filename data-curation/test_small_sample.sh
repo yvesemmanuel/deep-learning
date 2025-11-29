@@ -8,4 +8,4 @@ python3 main.py \
   --max_samples 1000 \
   --model_name Qwen/Qwen3-8B \
   --batch_size 32 \
-  --n_samples 1000
+  --n_samples 100

@@ -29,8 +29,8 @@ def main():
     parser.add_argument(
         "--model_name",
         type=str,
-        default="Qwen/Qwen3-30B-A3B-Instruct-2507",
-        help="Language model to use from HF (default: Qwen/Qwen3-30B-A3B-Instruct-2507)",
+        default="Qwen/Qwen3-4B-Instruct-2507",
+        help="Language model to use from HF (default: Qwen/Qwen3-4B-Instruct-2507)",
     )
     parser.add_argument(
         "--batch_size",
@@ -55,6 +55,12 @@ def main():
         type=str,
         default="predictions.json",
         help="Path to save/load predictions (default: predictions.json)",
+    )
+    parser.add_argument(
+        "--save_every_n",
+        type=int,
+        default=10,
+        help="Save checkpoint every N question inference",
     )
 
     args = parser.parse_args()
@@ -81,7 +87,9 @@ def main():
     classifier = HuggingFaceJeopardyClassifier(
         model_name=args.model_name, batch_size=args.batch_size
     )
-    predictions = classifier.classify_dataset(data, 1, args.predictions_file)
+    predictions = classifier.classify_dataset(
+        data, args.save_every_n, args.predictions_file
+    )
 
     logger.info("\n[3/4] Curating datasets...")
     curator = DatasetCurator(output_dir=args.output_dir)
