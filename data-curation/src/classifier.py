@@ -7,7 +7,6 @@ import json
 from typing import List, Dict
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
-import torch
 from tqdm import tqdm
 from transformers import AutoTokenizer, AutoModelForCausalLM, pipeline
 
@@ -47,17 +46,19 @@ class HuggingFaceJeopardyClassifier:
         logger.info("This may take a few moments...")
 
         tokenizer = AutoTokenizer.from_pretrained(model_name)
+        tokenizer.padding_side = "left"
+
+        if tokenizer.pad_token is None:
+            tokenizer.pad_token = tokenizer.eos_token
+
         model = AutoModelForCausalLM.from_pretrained(
-            model_name,
-            device_map=device_map,
-            torch_dtype=torch.float16 if torch.cuda.is_available() else torch.float32,
+            model_name, device_map=device_map, torch_dtype="auto"
         )
 
         self.pipeline = pipeline(
             "text-generation",
             model=model,
             tokenizer=tokenizer,
-            padding_side="left",
             max_new_tokens=max_new_tokens,
             return_full_text=False,
             batch_size=batch_size,
@@ -131,7 +132,25 @@ Do not include any explanation or additional text. Only return the JSON object."
                 generated_text = response[0]["generated_text"]
                 return parse_json_response(generated_text)
             except Exception as e:
-                logger.warning(f"Error parsing response: {e}")
+                # Log first few failures with full details for debugging
+                if not hasattr(parse_single_response, "error_count"):
+                    parse_single_response.error_count = 0
+
+                parse_single_response.error_count += 1
+
+                if parse_single_response.error_count <= 3:
+                    logger.warning(
+                        f"Error parsing response #{parse_single_response.error_count}: {e}"
+                    )
+                    try:
+                        logger.warning(f"Response structure: {response}")
+                        if response and len(response) > 0:
+                            logger.warning(
+                                f"Generated text preview: {str(response[0].get('generated_text', 'N/A'))[:200]}"
+                            )
+                    except:
+                        pass
+
                 return JeopardyClassification(
                     has_numbers=None,
                     has_non_english=None,
