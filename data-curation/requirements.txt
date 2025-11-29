@@ -1,0 +1,6 @@
+torch>=2.9.1
+transformers>=4.57.3
+accelerate>=1.12.0
+ipykernel>=7.1.0
+pydantic>=2.12.5
+datasets>=3.0.0
