@@ -34,3 +34,13 @@ Parameter-efficient fine-tuning of Vision Transformer models using Low-Rank Adap
 - Experiment tracking with Weights & Biases
 
 **[View Project →](./vit-semantic-segmentation/README.md)**
+
+### [Jeopardy Dataset Curation for NER Validation](./data-curation)
+A pipeline for curating validation datasets from 216,930 Jeopardy questions to evaluate Named Entity Recognition (NER) algorithms. Features:
+- LLM-based classification using Qwen3-4B-Instruct
+- Stratified sampling maintaining category distribution
+- Three linguistic challenge categories (numbers, non-English words, unusual proper nouns)
+- GPU-accelerated batch processing with checkpointing
+- Statistical analysis across the full dataset
+
+**[View Project →](./data-curation/README.md)**
